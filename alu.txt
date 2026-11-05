@@ -1,0 +1,193 @@
+library IEEE; 
+use IEEE.STD_LOGIC_1164.ALL; 
+use IEEE.NUMERIC_STD.ALL; 
+            entity alu is 
+    Port ( 
+        A    : in  STD_LOGIC_VECTOR(3 downto 0); 
+        B    : in  STD_LOGIC_VECTOR(3 downto 0); 
+        S    : in  STD_LOGIC_VECTOR(2 downto 0); 
+        cin  : in  STD_LOGIC; 
+        outp : out STD_LOGIC_VECTOR(3 downto 0); 
+        Cout : out STD_LOGIC 
+    ); 
+end alu; 
+ 
+architecture Behavioral of alu is 
+    signal acc : unsigned(4 downto 0); 
+begin
+ process(A, B, S, cin) 
+        variable temp : unsigned(4 downto 0); 
+    begin 
+        temp := (others => '0'); 
+ 
+        case S is 
+            when "000" => 
+                temp := ('0' & unsigned(A)) + ('0' & unsigned(B)); 
+ 
+            when "001" => 
+                temp := ('0' & unsigned(A)) - ('0' & unsigned(B)); 
+ 
+            when "010" => 
+                temp(3 downto 0) := unsigned(A and B); 
+ 
+            when "011" => 
+                temp(3 downto 0) := unsigned(A or B); 
+ 
+            when "100" => 
+                temp(3 downto 0) := unsigned(not A); 
+ 
+            when "101" => 
+                temp(3 downto 0) := unsigned(not B); 
+ 
+            when "110" => 
+                temp(3 downto 0) := shift_left(unsigned(A), 1); 
+ 
+            when "111" => 
+                temp(3 downto 0) := shift_right(unsigned(A), 1); 
+ 
+            when others => 
+                temp := (others => '0'); 
+        end case; 
+ 
+        acc <= temp; 
+        outp <= std_logic_vector(temp(3 downto 0)); 
+        Cout <= temp(4); 
+    end process; 
+ 
+end Behavioral;
+
+
+
+
+
+
+
+
+
+
+
+
+library IEEE; 
+use IEEE.STD_LOGIC_1164.ALL; 
+use IEEE.NUMERIC_STD.ALL; 
+ 
+entity test_ALU is 
+end test_ALU; 
+ 
+architecture Behavioral of test_ALU is 
+ 
+    signal A   : STD_LOGIC_VECTOR(3 downto 0) := "0000"; 
+    signal B   : STD_LOGIC_VECTOR(3 downto 0) := "0000"; 
+    signal S   : STD_LOGIC_VECTOR(2 downto 0) := "000"; 
+    signal cin : STD_LOGIC := '0'; 
+ 
+    signal outp : STD_LOGIC_VECTOR(3 downto 0); 
+    signal Cout : STD_LOGIC; 
+ 
+begin 
+ 
+    -- Instantiate the Unit Under Test (UUT) 
+    uut: entity work.alu 
+        port map ( 
+            A    => A, 
+            B    => B, 
+            S    => S, 
+            cin  => cin, 
+            outp => outp, 
+            Cout => Cout 
+        ); 
+ 
+    -- Test process 
+    stimulus: process 
+    begin 
+ 
+        -- Addition (S = 000) 
+        S <= "000"; 
+        cin <= '0'; 
+        A <= "0000"; B <= "0000"; 
+        wait for 100 ns; 
+ 
+        A <= "0000"; B <= "0001"; 
+        wait for 100 ns; 
+ 
+        A <= "0001"; B <= "0000"; 
+        wait for 100 ns; 
+ 
+        A <= "0001"; B <= "0001"; 
+        wait for 100 ns; 
+ 
+        -- Subtraction (S = 001) 
+        S <= "001"; 
+        A <= "0000"; B <= "0000"; 
+        wait for 100 ns; 
+ 
+        A <= "0001"; B <= "0001";
+        wait for 100 ns; 
+ 
+        A <= "0010"; B <= "0001"; 
+        wait for 100 ns; 
+ 
+        A <= "0100"; B <= "0010"; 
+        wait for 100 ns; 
+ 
+        -- AND (S = 010) 
+        S <= "010"; 
+        A <= "1010"; B <= "1100"; 
+        wait for 100 ns; 
+ 
+        -- OR (S = 011) 
+        S <= "011"; 
+        A <= "1010"; B <= "0101"; 
+        wait for 100 ns; 
+ 
+        -- NOT A (S = 100) 
+        S <= "100"; 
+        A <= "1010"; 
+        wait for 100 ns; 
+ 
+        -- NOT B (S = 101) 
+        S <= "101"; 
+        B <= "1100"; 
+        wait for 100 ns; 
+ 
+        -- Left shift (S = 110) 
+        S <= "110"; 
+        A <= "0011"; 
+        wait for 100 ns; 
+ 
+        -- Right shift (S = 111) 
+        S <= "111"; 
+        A <= "1100"; 
+        wait for 100 ns; 
+ 
+        wait; 
+    end process; 
+ 
+end Behavioral;
+
+
+
+
+
+# 4-bit ALU - Input A
+NET "A<0>" LOC = "P6";
+NET "A<1>" LOC = "P58";
+NET "A<2>" LOC = "P54";
+NET "A<3>" LOC = "P75";
+
+# 4-bit ALU - Input B
+NET "B<0>" LOC = "P8";
+NET "B<1>" LOC = "P61";
+NET "B<2>" LOC = "P67";
+NET "B<3>" LOC = "P116";
+
+# ALU Select Lines
+NET "S<0>" LOC = "P141";
+NET "S<1>" LOC = "P137";
+NET "S<2>" LOC = "P131";
+
+# 4-bit ALU Output
+NET "outp<0>" LOC = "P7";
+NET "outp<1>" LOC = "P62";
+NET "outp<2>" LOC = "P16";
+NET "outp<3>" LOC = "P2";

@@ -1,0 +1,200 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity keypad is
+    Port (
+        clk     : in  STD_LOGIC;
+        row     : in  STD_LOGIC_VECTOR(3 downto 0);
+        col     : out STD_LOGIC_VECTOR(3 downto 0);
+        seg     : out STD_LOGIC_VECTOR(6 downto 0)
+    );
+end keypad;
+
+architecture Behavioral of keypad is
+
+    signal scan : STD_LOGIC_VECTOR(3 downto 0)
+                 := "1110";
+    signal key  : STD_LOGIC_VECTOR(3 downto 0)
+                 := "0000";
+
+begin
+
+    process(clk)
+    begin
+        if rising_edge(clk) then
+
+            case scan is
+
+                when "1110" =>
+                    col <= "1110";
+                    if row /= "1111" then
+                        case row is
+                            when "1110" => key <= "1100"; -- C
+                            when "1101" => key <= "1011"; -- B
+                            when "1011" => key <= "0111"; -- 7
+                            when "0111" => key <= "0011"; -- 3
+                            when others => key <= "0000";
+                        end case;
+                    end if;
+                    scan <= "1101";
+
+                when "1101" =>
+                    col <= "1101";
+                    if row /= "1111" then
+                        case row is
+                            when "1110" => key <= "1101"; -- D
+                            when "1101" => key <= "1010"; -- A
+                            when "1011" => key <= "0110"; -- 6
+                            when "0111" => key <= "0010"; -- 2
+                            when others => key <= "0000";
+                        end case;
+                    end if;
+                    scan <= "1011";
+
+                when "1011" =>
+                    col <= "1011";
+                    if row /= "1111" then
+                        case row is
+                            when "1110" => key <= "1110"; -- E
+                            when "1101" => key <= "1001"; -- 9
+                            when "1011" => key <= "0101"; -- 5
+                            when "0111" => key <= "0001"; -- 1
+                            when others => key <= "0000";
+                        end case;
+                    end if;
+                    scan <= "0111";
+
+                when others =>
+                    col <= "0111";
+                    if row /= "1111" then
+                        case row is
+                            when "1110" => key <= "1111"; -- F
+                            when "1101" => key <= "1000"; -- 8
+                            when "1011" => key <= "0100"; -- 4
+                            when "0111" => key <= "0000"; -- 0
+                            when others => key <= "0000";
+                        end case;
+                    end if;
+                    scan <= "1110";
+
+            end case;
+        end if;
+    end process;
+
+    process(key)
+    begin
+        case key is
+            when "0000" => seg <= "1000000"; -- 0
+            when "0001" => seg <= "1111001"; -- 1
+            when "0010" => seg <= "0100100"; -- 2
+            when "0011" => seg <= "0110000"; -- 3
+            when "0100" => seg <= "0011001"; -- 4
+            when "0101" => seg <= "0010010"; -- 5
+            when "0110" => seg <= "0000010"; -- 6
+            when "0111" => seg <= "1111000"; -- 7
+            when "1000" => seg <= "0000000"; -- 8
+            when "1001" => seg <= "0010000"; -- 9
+            when "1010" => seg <= "0001000"; -- A
+            when "1011" => seg <= "0000011"; -- b
+            when "1100" => seg <= "1000110"; -- C
+            when "1101" => seg <= "0100001"; -- d
+            when "1110" => seg <= "0000110"; -- E
+            when "1111" => seg <= "0001110"; -- F
+            when others => seg <= "1111111";
+        end case;
+    end process;
+
+end Behavioral;
+
+
+
+
+
+
+
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity keypad_tb is
+end keypad_tb;
+
+architecture Behavioral of keypad_tb is
+
+    signal clk : STD_LOGIC := '0';
+    signal row : STD_LOGIC_VECTOR(3 downto 0)
+                 := "1111";
+    signal col : STD_LOGIC_VECTOR(3 downto 0);
+    signal seg : STD_LOGIC_VECTOR(6 downto 0);
+
+begin
+
+    uut: entity work.keypad
+        port map (
+            clk => clk,
+            row => row,
+            col => col,
+            seg => seg
+        );
+
+    -- Clock generation
+    clk_process: process
+    begin
+        clk <= '0';
+        wait for 10 ns;
+        clk <= '1';
+        wait for 10 ns;
+    end process;
+
+    -- Test process
+    stimulus: process
+    begin
+
+        -- No key pressed
+        row <= "1111";
+        wait for 100 ns;
+
+        -- Row 1: C, D, E, F
+        row <= "1110";
+        wait for 100 ns;
+
+        -- Row 2: B, A, 9, 8
+        row <= "1101";
+        wait for 100 ns;
+
+        -- Row 3: 7, 6, 5, 4
+        row <= "1011";
+        wait for 100 ns;
+
+        -- Row 4: 3, 2, 1, 0
+        row <= "0111";
+        wait for 100 ns;
+
+        -- No key pressed
+        row <= "1111";
+        wait for 100 ns;
+
+        wait;
+    end process;
+
+end Behavioral;
+
+
+
+
+
+
+
+
+
+NET "clk" LOC = "P56";
+
+NET "col<0>" LOC = "P58";
+NET "col<1>" LOC = "P62";
+NET "col<2>" LOC = "P61";
+NET "col<3>" LOC = "P66";
+
+NET "row<0>" LOC = "P64";
+NET "row<1>" LOC = "P16";
+NET "row<2>" LOC = "P117";
+NET "row<3>" LOC = "P75";
